@@ -1,0 +1,19 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../database/database_prisma.sqlite"
+}
+
+model Pokemon {
+  name String
+  type String
+
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now()) @map("created_at")
+
+
+  @@map("pokemons")
+}
