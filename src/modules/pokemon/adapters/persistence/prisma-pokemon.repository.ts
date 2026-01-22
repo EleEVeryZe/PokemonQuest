@@ -8,14 +8,17 @@ import { Pokemon as DomainPokemon } from '@modules/pokemon/domain/pokemon.entity
 export class PrismaPokemonRepository implements IPokemonRepository {
   constructor(private prisma: PrismaService) { }
 
-  async findAll(filter?: Partial<DomainPokemon>): Promise<DomainPokemon[]> {
+  async findAll(filter?: Partial<DomainPokemon>, offset?: number, limit?: number): Promise<DomainPokemon[]> {
     const rawPokemons = await this.prisma.pokemon.findMany({
       where: {
         type: filter?.type,
         name: filter?.name ? {
           contains: filter.name,
         } : undefined,
-      }
+      },
+      skip: offset || Number(process.env.PRISMA_SKIP_DEFAULT),
+      take: limit || Number(process.env.PRISMA_TAKE_DEFAULT),
+
     });
     return rawPokemons.map(PokemonMapper.toDomain)
 

@@ -7,6 +7,7 @@ import { PrismaModule } from "./modules/prisma/prisma.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { formatError } from "./config/format-error";
 import { PokemonModule } from "@modules/pokemon/pokemon.module";
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PokemonModule } from "@modules/pokemon/pokemon.module";
     }),
     PokemonModule,
     PrismaModule,
+    ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: "sqlite",
       database: "./database/database_orm.sqlite",

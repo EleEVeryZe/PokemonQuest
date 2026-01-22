@@ -16,7 +16,11 @@ input PokemonFilter {
 }
 
 type Query {
-  getPokemons(filter: PokemonFilter): [Pokemon!]!
+  getPokemons(
+    filter: PokemonFilter
+    offset: Int 
+    limit: Int
+  ): [Pokemon!]!
 }
 
 type Mutation {

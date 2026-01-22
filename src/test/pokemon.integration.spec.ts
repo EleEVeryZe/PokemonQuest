@@ -10,7 +10,7 @@ describe('Pokemon GraphQL', () => {
   let app: INestApplication;
   let prisma: PrismaService;
 
-  const mockedPokemons = [
+  const pokemonBag = [
     PokemonBuilder.get().aCharizard(),
     PokemonBuilder.get().aBlastoise(),
     PokemonBuilder.get().aCharmeleon(),
@@ -28,7 +28,7 @@ describe('Pokemon GraphQL', () => {
 
     await prisma.pokemon.deleteMany();
     await prisma.pokemon.createMany({
-      data: mockedPokemons,
+      data: pokemonBag,
     });
   });
 
@@ -51,7 +51,7 @@ describe('Pokemon GraphQL', () => {
       .send({ query });
 
     expect(response.status).toBe(200);
-    expect(response.body.data.getPokemons[0].name).toBe(mockedPokemons.at(0).name);
+    expect(response.body.data.getPokemons[0].name).toBe(pokemonBag.at(0).name);
   });
 
   it('should filter pokemons by type', async () => {
@@ -97,5 +97,30 @@ describe('Pokemon GraphQL', () => {
       expect(p.type).toBe('Electric');
       expect(p.name.indexOf("chu") !== -1).toBeTruthy();
     });
+  });
+
+  it('should paginate results', async () => {
+    const query = `
+    query GetPaginated($offset: Int, $limit: Int) {
+      getPokemons(offset: $offset, limit: $limit) {
+        name
+      }
+    }
+  `;
+
+    const response = await request(app.getHttpServer())
+      .post('/graphql')
+      .send({
+        query,
+        variables: { offset: 1, limit: 2 },
+      });
+
+    const results = response.body.data.getPokemons;
+
+    const [, blastoise, charmeleon] = pokemonBag;
+
+    expect(results).toHaveLength(2);
+    expect(results[0].name).toBe(blastoise.name);
+    expect(results[1].name).toBe(charmeleon.name);
   });
 });

@@ -8,7 +8,7 @@ export class PokemonService {
     @Inject(POKEMON_REPOSITORY) private readonly repo: IPokemonRepository,
   ) {}
 
-  async getPokemons(filter?: Partial<Pokemon>) {
-    return this.repo.findAll(filter);
+  async getPokemons(filter?: Partial<Pokemon>, offset?: number, limit?: number) {
+    return this.repo.findAll(filter, offset, limit);
   }
 }
