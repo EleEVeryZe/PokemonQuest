@@ -8,7 +8,7 @@ import { Pokemon as DomainPokemon } from '@modules/pokemon/domain/pokemon.entity
 export class PrismaPokemonRepository implements IPokemonRepository {
   private readonly SKIP_DEFAULT = Number(process.env.PRISMA_SKIP_DEFAULT) || 0;
   private readonly TAKE_DEFAULT = Number(process.env.PRISMA_TAKE_DEFAULT) || 20;
-  
+
   constructor(private prisma: PrismaService) { }
 
   async findAll(filter?: Partial<DomainPokemon>, offset?: number, limit?: number, sort?: { field: string; order: 'ASC' | 'DESC' },): Promise<DomainPokemon[]> {
@@ -31,7 +31,14 @@ export class PrismaPokemonRepository implements IPokemonRepository {
 
   }
 
-  save(pokemon: DomainPokemon): Promise<DomainPokemon> {
-    throw new Error('Method not implemented.');
+  async save(pokemon: DomainPokemon): Promise<DomainPokemon> {
+    const created = await this.prisma.pokemon.create({
+      data: {
+        name: pokemon.name,
+        type: pokemon.type,
+      }
+    });
+
+    return PokemonMapper.toDomain(created);
   }
 }

@@ -11,4 +11,8 @@ export class PokemonService {
   async getPokemons(filter?: Partial<Pokemon>, offset?: number, limit?: number, sort?: { field: string; order: 'ASC' | 'DESC' },) {
     return this.repo.findAll(filter, offset, limit, sort);
   }
+
+  async createPokemon(name: string, type: string) {
+    return this.repo.save(new Pokemon(undefined, name, type, new Date()));
+  }
 }

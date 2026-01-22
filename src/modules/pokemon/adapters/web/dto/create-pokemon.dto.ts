@@ -1,14 +1,9 @@
-import { IsString, IsNotEmpty } from 'class-validator';
-
-const msgPokemonName = "Your Pokemon must have a name";
-const msgPokemonType = "Your Pokemon must have a type";
+import { IsNotEmpty } from 'class-validator';
 
 export class CreatePokemonDto {
-  @IsString({ message: msgPokemonName })
-  @IsNotEmpty({ message: msgPokemonName })
+  @IsNotEmpty({ message: "Your Pokemon must have a name" })
   name: string;
 
-  @IsString({ message: msgPokemonType })
-  @IsNotEmpty({ message: msgPokemonType })
+  @IsNotEmpty({ message: "Your Pokemon must have a type" })
   type: string;
 }

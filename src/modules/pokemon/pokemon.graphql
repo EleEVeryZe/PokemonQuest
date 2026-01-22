@@ -6,8 +6,8 @@ type Pokemon {
 }
 
 input CreatePokemonInput {
-  name: String!
-  type: String!
+  name: String
+  type: String
 }
 
 input PokemonFilter {
