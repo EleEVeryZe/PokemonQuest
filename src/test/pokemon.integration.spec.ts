@@ -232,40 +232,60 @@ describe('Pokemon GraphQL', () => {
     });
   });
 
-  describe("Mutation (Update)", () => {
-    it('should update an existing pokemon', async () => {
-      //Lets pretend that Pikachu trainner spelled its name incorrectly in registration
-      const existing = await prisma.pokemon.create({
-        data: { name: 'Pichu', type: 'Electric' }
+  describe("Mutation (Update and Delete)", () => {
+   it('should update and remove an existing pokemon', async () => {
+    // Let's pretend that Pikachu's trainer spelled its name incorrectly in registration
+    const existing = await prisma.pokemon.create({
+      data: { name: 'Pichu', type: 'Electric' }
+    });
+
+    // Now he needs to make a request to change that!
+    const updateMutation = `
+      mutation Update($input: UpdatePokemonInput!) {
+        updatePokemon(input: $input) {
+          id
+          name
+        }
+      }
+    `;
+
+    const updateInput = {
+      id: existing.id,
+      name: 'Pikachu'
+    };
+
+    const updateResponse = await request(app.getHttpServer())
+      .post('/graphql')
+      .send({
+        query: updateMutation,
+        variables: { input: updateInput },
       });
 
+    // After he's done so, he verifies that now it's correct:
+    expect(updateResponse.body.data.updatePokemon.name).toBe('Pikachu');
+    const updatedDbCheck = await prisma.pokemon.findUnique({ where: { id: existing.id } });
+    expect(updatedDbCheck.name).toBe('Pikachu');
 
-      //Now he needs to make a request to change that!
-      const mutation = `
-        mutation Update($input: UpdatePokemonInput!) {
-          updatePokemon(input: $input) {
-            id
-            name
-          }
-        }
-      `;
+    // But he changes his mind and thinks this registration leaves too much hints for his enemies
+    // Then he deletes it
+    const deleteMutation = `
+      mutation Remove($id: Int!) {
+        deletePokemon(id: $id)
+      }
+    `;
 
-      const input = {
-        id: existing.id,
-        name: 'Pikachu'
-      };
+    const deleteResponse = await request(app.getHttpServer())
+      .post('/graphql')
+      .send({
+        query: deleteMutation,
+        variables: { id: existing.id }, // Just passing the ID
+      });
 
-      const response = await request(app.getHttpServer())
-        .post('/graphql')
-        .send({
-          query: mutation,
-          variables: { input },
-        });
-
-      //After he done so, he verifies that now it's correct:
-      expect(response.body.data.updatePokemon.name).toBe('Pikachu');
-      const dbCheck = await prisma.pokemon.findUnique({ where: { id: existing.id } });
-      expect(dbCheck.name).toBe('Pikachu');
-    });
+    // Finally, he checks the database and sees that his Pokemon is no longer there!
+    expect(deleteResponse.body.data.deletePokemon).toBe(true);
+    
+    const finalDbCheck = await prisma.pokemon.findUnique({ where: { id: existing.id } });
+    expect(finalDbCheck).toBeNull();
+  });
   })
 });

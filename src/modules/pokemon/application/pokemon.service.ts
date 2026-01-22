@@ -19,4 +19,8 @@ export class PokemonService {
   async updatePokemon(id: number, pokemon?: Partial<Omit<Pokemon, "id">>) {
     return this.repo.update(id, pokemon);
   }
+
+  async deletePokemon(id: number) {
+    return this.repo.delete(id);
+  }
 }

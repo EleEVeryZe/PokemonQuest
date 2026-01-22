@@ -33,6 +33,7 @@ type Query {
 type Mutation {
   createPokemon(input: CreatePokemonInput!): Pokemon!
   updatePokemon(input: UpdatePokemonInput!): Pokemon!
+  deletePokemon(id: Int!): Boolean!
 }
 
 input PokemonSort {

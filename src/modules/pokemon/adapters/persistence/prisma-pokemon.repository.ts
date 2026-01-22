@@ -52,7 +52,10 @@ export class PrismaPokemonRepository implements IPokemonRepository {
     return PokemonMapper.toDomain(updated);
   }
 
-  delete(pokemonId: number): Promise<DomainPokemon> {
-    throw new Error('Method not implemented.');
+  async delete(id: number): Promise<Boolean> {
+    await this.prisma.pokemon.delete({
+      where: { id }
+    });
+    return true;
   }
 }

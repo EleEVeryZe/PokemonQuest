@@ -28,4 +28,9 @@ export class PokemonResolver {
   async updatePokemon(@Args('input') pokemon: UpdatePokemonDto) {
     return this.pokemonService.updatePokemon(pokemon.id, pokemon);
   }
+
+  @Mutation('deletePokemon')
+  async deletePokemon(@Args('id') id: number) {
+    return this.pokemonService.deletePokemon(id);
+  }
 }
