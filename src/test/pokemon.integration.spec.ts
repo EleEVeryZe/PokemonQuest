@@ -3,33 +3,33 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../app.module';
 
-import { PokemonService } from '@/modules/pokemon/application/pokemon.service';
 import { PokemonBuilder } from './utils/builder/pokemonBuilder';
+import { PrismaService } from '@/modules/prisma/prisma.service';
 
 describe('Pokemon GraphQL', () => {
   let app: INestApplication;
-  let service: PokemonService;
+  let prisma: PrismaService;
 
-  const mockCharizard = PokemonBuilder
-    .get()
-    .aCharizard()
-    .build();
+  const mockedPokemons = [
+    PokemonBuilder.get().aCharizard(),
+    PokemonBuilder.get().aBlastoise(),
+    PokemonBuilder.get().aCharmeleon(),
+    PokemonBuilder.get().aPikachu()
+  ].map(p => p.build());
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    })
-      .overrideProvider(PokemonService)
-      .useValue({
-        getPokemons: jest.fn().mockResolvedValue([mockCharizard]),
-        getDetails: jest.fn().mockResolvedValue(mockCharizard),
-      })
-      .compile();
+    }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
-    
-    service = moduleFixture.get<PokemonService>(PokemonService);
+    prisma = moduleFixture.get<PrismaService>(PrismaService);
+
+    await prisma.pokemon.deleteMany();
+    await prisma.pokemon.createMany({
+      data: mockedPokemons,
+    });
   });
 
   afterAll(async () => {
@@ -51,8 +51,51 @@ describe('Pokemon GraphQL', () => {
       .send({ query });
 
     expect(response.status).toBe(200);
-    expect(response.body.data.getPokemons[0].name).toBe(mockCharizard.name);
-    
-    expect(service.getPokemons).toHaveBeenCalled();
+    expect(response.body.data.getPokemons[0].name).toBe(mockedPokemons.at(0).name);
+  });
+
+  it('should filter pokemons by type', async () => {
+    const query = `
+      query GetByType($filterInput: PokemonFilter) {
+        getPokemons(filter: $filterInput) {
+          name
+          type
+        }
+      }
+    `;
+
+    const response = await request(app.getHttpServer())
+      .post('/graphql')
+      .send({
+        query,
+        variables: { filterInput: { type: 'WATER' } },
+      });
+
+    const results = response.body.data.getPokemons;
+    results.forEach(p => expect(p.type).toBe('WATER'));
+  });
+
+  it('should filter pokemons by partil name', async () => {
+    const query = `
+      query GetByType($filterInput: PokemonFilter) {
+        getPokemons(filter: $filterInput) {
+          name
+          type
+        }
+      }
+    `;
+
+    const response = await request(app.getHttpServer())
+      .post('/graphql')
+      .send({
+        query,
+        variables: { filterInput: { name: "chu" } },
+      });
+
+    const results = response.body.data.getPokemons;
+    results.forEach(p => {
+      expect(p.type).toBe('Electric');
+      expect(p.name.indexOf("chu") !== -1).toBeTruthy();
+    });
   });
 });

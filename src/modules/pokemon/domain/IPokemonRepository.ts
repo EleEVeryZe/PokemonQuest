@@ -1,7 +1,7 @@
 import { Pokemon } from './pokemon.entity';
 
 export interface IPokemonRepository {
-  findAll(): Promise<Pokemon[]>;
+  findAll(filter?: Partial<Pokemon>): Promise<Pokemon[]>;
   save(pokemon: Pokemon): Promise<Pokemon>;
 }
 

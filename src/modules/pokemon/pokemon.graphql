@@ -10,8 +10,13 @@ input CreatePokemonInput {
   type: String!
 }
 
+input PokemonFilter {
+  name: String
+  type: String
+}
+
 type Query {
-  getPokemons: [Pokemon!]!
+  getPokemons(filter: PokemonFilter): [Pokemon!]!
 }
 
 type Mutation {

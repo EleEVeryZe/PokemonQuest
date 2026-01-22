@@ -42,8 +42,3 @@ $ npm run test
 or
 $ yarn test
 ```
-
-## Limitations
-
-Due to the time constraints of the challenge, was decided to mock db results in e2e testing. This should be implemented fully in a 
-production environment.
