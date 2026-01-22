@@ -12,9 +12,9 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   private readonly MAX_TAKE = Number(process.env.PRISMA_MAX_TAKE_DEFAULT) || 50;
-  
+
   constructor() {
-    super({ log: ['query'] });
+    super();
   }
   async onModuleInit() {
     await this.$connect();

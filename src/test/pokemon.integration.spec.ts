@@ -177,7 +177,7 @@ describe('Pokemon GraphQL', () => {
     });
   });
 
-  describe("Mutations", () => {
+  describe("Mutations (Create)", () => {
     it('should return validation error if type or name is missing', async () => {
       const mutation = `
         mutation Create($input: CreatePokemonInput!) {
@@ -185,7 +185,7 @@ describe('Pokemon GraphQL', () => {
         }
       `;
 
-      const missinAllProp = { };
+      const missinAllProp = {};
 
       const response = await request(app.getHttpServer())
         .post('/graphql')
@@ -232,4 +232,40 @@ describe('Pokemon GraphQL', () => {
     });
   });
 
+  describe("Mutation (Update)", () => {
+    it('should update an existing pokemon', async () => {
+      //Lets pretend that Pikachu trainner spelled its name incorrectly in registration
+      const existing = await prisma.pokemon.create({
+        data: { name: 'Pichu', type: 'Electric' }
+      });
+
+
+      //Now he needs to make a request to change that!
+      const mutation = `
+        mutation Update($input: UpdatePokemonInput!) {
+          updatePokemon(input: $input) {
+            id
+            name
+          }
+        }
+      `;
+
+      const input = {
+        id: existing.id,
+        name: 'Pikachu'
+      };
+
+      const response = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({
+          query: mutation,
+          variables: { input },
+        });
+
+      //After he done so, he verifies that now it's correct:
+      expect(response.body.data.updatePokemon.name).toBe('Pikachu');
+      const dbCheck = await prisma.pokemon.findUnique({ where: { id: existing.id } });
+      expect(dbCheck.name).toBe('Pikachu');
+    });
+  })
 });

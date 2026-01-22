@@ -41,4 +41,18 @@ export class PrismaPokemonRepository implements IPokemonRepository {
 
     return PokemonMapper.toDomain(created);
   }
+
+  async update(id: number, pokemon: Partial<Omit<DomainPokemon, "id">>): Promise<DomainPokemon> {     
+    const updated = await this.prisma.pokemon.update({
+      where: { id }, data: {
+        name: pokemon.name,
+        type: pokemon.type,
+      },
+    });
+    return PokemonMapper.toDomain(updated);
+  }
+
+  delete(pokemonId: number): Promise<DomainPokemon> {
+    throw new Error('Method not implemented.');
+  }
 }

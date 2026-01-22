@@ -5,6 +5,12 @@ type Pokemon {
   createdAt: String!
 }
 
+input UpdatePokemonInput {
+  id: Int!
+  name: String
+  type: String
+}
+
 input CreatePokemonInput {
   name: String
   type: String
@@ -26,6 +32,7 @@ type Query {
 
 type Mutation {
   createPokemon(input: CreatePokemonInput!): Pokemon!
+  updatePokemon(input: UpdatePokemonInput!): Pokemon!
 }
 
 input PokemonSort {

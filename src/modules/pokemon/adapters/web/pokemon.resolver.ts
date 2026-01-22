@@ -1,6 +1,7 @@
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { PokemonService } from '../../application/pokemon.service';
 import { Pokemon } from '../../domain/pokemon.entity';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 
 @Resolver('Pokemon')
@@ -21,5 +22,10 @@ export class PokemonResolver {
   @Mutation('createPokemon')
   async createPokemon(@Args('input') pokemon: CreatePokemonDto) {
     return this.pokemonService.createPokemon(pokemon.name, pokemon.type);
+  }
+
+  @Mutation('updatePokemon')
+  async updatePokemon(@Args('input') pokemon: UpdatePokemonDto) {
+    return this.pokemonService.updatePokemon(pokemon.id, pokemon);
   }
 }

@@ -3,6 +3,8 @@ import { Pokemon } from './pokemon.entity';
 export interface IPokemonRepository {
   findAll(filter?: Partial<Pokemon>, offset?: number, limit?: number, sort?: { field: string; order: 'ASC' | 'DESC' },): Promise<Pokemon[]>;
   save(pokemon: Pokemon): Promise<Pokemon>;
+  update(id: number, pokemon: Partial<Pokemon>): Promise<Pokemon>;
+  delete(pokemonId: number): Promise<Pokemon>;
 }
 
 export const POKEMON_REPOSITORY = Symbol('POKEMON_REPOSITORY');

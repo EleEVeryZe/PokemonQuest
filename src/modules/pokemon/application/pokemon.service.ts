@@ -15,4 +15,8 @@ export class PokemonService {
   async createPokemon(name: string, type: string) {
     return this.repo.save(new Pokemon(undefined, name, type, new Date()));
   }
+
+  async updatePokemon(id: number, pokemon?: Partial<Omit<Pokemon, "id">>) {
+    return this.repo.update(id, pokemon);
+  }
 }
