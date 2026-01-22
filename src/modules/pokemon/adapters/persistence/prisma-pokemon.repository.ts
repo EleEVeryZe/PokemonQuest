@@ -8,7 +8,7 @@ import { Pokemon as DomainPokemon } from '@modules/pokemon/domain/pokemon.entity
 export class PrismaPokemonRepository implements IPokemonRepository {
   constructor(private prisma: PrismaService) { }
 
-  async findAll(filter?: Partial<DomainPokemon>, offset?: number, limit?: number): Promise<DomainPokemon[]> {
+  async findAll(filter?: Partial<DomainPokemon>, offset?: number, limit?: number, sort?: { field: string; order: 'ASC' | 'DESC' },): Promise<DomainPokemon[]> {
     const rawPokemons = await this.prisma.pokemon.findMany({
       where: {
         type: filter?.type,
@@ -16,6 +16,10 @@ export class PrismaPokemonRepository implements IPokemonRepository {
           contains: filter.name,
         } : undefined,
       },
+      orderBy: sort?.field ?
+        {
+          [sort.field]: sort.order?.toLowerCase() || 'asc'
+        } : { name: 'asc' },
       skip: offset || Number(process.env.PRISMA_SKIP_DEFAULT),
       take: limit || Number(process.env.PRISMA_TAKE_DEFAULT),
 

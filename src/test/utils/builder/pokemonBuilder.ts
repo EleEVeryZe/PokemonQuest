@@ -18,13 +18,13 @@ export class PokemonBuilder implements Builder<Pokemon> {
   }
 
   aPikachu(): this {
-    this.name = 'Pikachu';
+    this.name = 'pikachu';
     this.type = 'Electric';
     return this;
   }
 
   aRaichu(): this {
-    this.name = 'Raichu';
+    this.name = 'raichu';
     this.type = 'Electric';
     return this;
   }

@@ -11,8 +11,9 @@ export class PokemonResolver {
     @Args("filter") filter?: Partial<Pokemon>,
     @Args('offset') offset?: number,
     @Args('limit') limit?: number,
+    @Args('sort') sort?: { field: string; order: 'ASC' | 'DESC' },
 
   ) {
-    return this.pokemonService.getPokemons(filter, offset, limit);
+    return this.pokemonService.getPokemons(filter, offset, limit, sort);
   }
 }

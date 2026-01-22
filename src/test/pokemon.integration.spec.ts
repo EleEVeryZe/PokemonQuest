@@ -10,9 +10,9 @@ describe('Pokemon GraphQL', () => {
   let app: INestApplication;
   let prisma: PrismaService;
 
-  const pokemonBag = [
-    PokemonBuilder.get().aCharizard(),
+  const ascOrderedPokemonBag = [
     PokemonBuilder.get().aBlastoise(),
+    PokemonBuilder.get().aCharizard(),
     PokemonBuilder.get().aCharmeleon(),
     PokemonBuilder.get().aPikachu()
   ].map(p => p.build());
@@ -28,7 +28,7 @@ describe('Pokemon GraphQL', () => {
 
     await prisma.pokemon.deleteMany();
     await prisma.pokemon.createMany({
-      data: pokemonBag,
+      data: ascOrderedPokemonBag,
     });
   });
 
@@ -51,7 +51,7 @@ describe('Pokemon GraphQL', () => {
       .send({ query });
 
     expect(response.status).toBe(200);
-    expect(response.body.data.getPokemons[0].name).toBe(pokemonBag.at(0).name);
+    expect(response.body.data.getPokemons[0].name).toBe(ascOrderedPokemonBag.at(0).name);
   });
 
   it('should filter pokemons by type', async () => {
@@ -115,12 +115,62 @@ describe('Pokemon GraphQL', () => {
         variables: { offset: 1, limit: 2 },
       });
 
+
     const results = response.body.data.getPokemons;
 
-    const [, blastoise, charmeleon] = pokemonBag;
+    const [,charizard,charmeleon] = ascOrderedPokemonBag;
 
     expect(results).toHaveLength(2);
-    expect(results[0].name).toBe(blastoise.name);
+
+    expect(results[0].name).toBe(charizard.name);
     expect(results[1].name).toBe(charmeleon.name);
+  });
+
+  it('should sort pokemons by name DESC', async () => {
+    const query = `
+    query GetSorted($sort: PokemonSort) {
+      getPokemons(sort: $sort) {
+        name
+      }
+    }
+  `;
+
+    const response = await request(app.getHttpServer())
+      .post('/graphql')
+      .send({
+        query,
+        variables: {
+          sort: { field: 'name', order: 'DESC' }
+        },
+      });
+
+    const results = response.body.data.getPokemons;
+
+    expect(results[0].name.toLowerCase()).toBe('pikachu');
+    expect(results[results.length - 1].name.toLowerCase()).toBe('blastoise');
+  });
+
+  it('should sort pokemons by name ASC without passing order', async () => {
+    const query = `
+    query GetSorted($sort: PokemonSort) {
+      getPokemons(sort: $sort) {
+        name
+      }
+    }
+  `;
+
+    const response = await request(app.getHttpServer())
+      .post('/graphql')
+      .send({
+        query,
+        variables: {
+          sort: { field: 'name' }
+        },
+      });
+
+    const results = response.body.data.getPokemons;
+
+    expect(results[0].name.toLowerCase()).toBe('blastoise');
+    expect(results[results.length - 1].name.toLowerCase()).toBe('pikachu');
   });
 });

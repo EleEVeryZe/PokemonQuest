@@ -20,9 +20,20 @@ type Query {
     filter: PokemonFilter
     offset: Int 
     limit: Int
+    sort: PokemonSort
   ): [Pokemon!]!
 }
 
 type Mutation {
   createPokemon(input: CreatePokemonInput!): Pokemon!
+}
+
+input PokemonSort {
+  field: String
+  order: SortOrder
+}
+
+enum SortOrder {
+  ASC
+  DESC
 }
