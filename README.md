@@ -1,44 +1,38 @@
-# Candidate Interview Project
+# PokemonQuest
 
-## Project Overview
+ The application consists of a GraphQL API for management of pokemons. It is being developed with scallability, testability and separation of concern mindset.
 
-Welcome to the interview project! This project is designed to assess your skills in building a backend API using Node.
+## Technologies
 
-### Goals
+- **Node.js** with **TypeScript**
+- **NestJS** (Framework)
+- **GraphQL** (API interface)
+- **Prisma ORM** (persistence)
+- **SQLite** (Database)
+- **Jest and Supertest** (Unit and integraiton testing)
 
-- Understand your proficiency with Node.
-- Assess your ability to design and implement a scalable API.
-- Evaluate your coding practices and problem-solving approach.
+---
 
-## Installation
+## Architecture
 
-```bash
-$ npm install
-or
-$ yarn
-```
+The project is being structured following **Hexagonal Archtecture**. This guarantees that if in the future, any technologies outside the domain gets modified, there will be no effort in changing the domain.
 
-## (Optional) generate prisma files
+### File Structure:
+- `domain/`: Domain classes
+- `application/`: bridge from adpters and domain
+- `adapters/`: Impleentation of Prisma, GraphQL resolvers
 
-```bash
-$ npm run prisma generate
-or
-$ yarn prisma generate
+---
 
-```
+## How to run it?
 
-## Running the app
+### Required:
+- Node.js (v18+)
+- NPM ou Yarn
 
-```bash
-$ npm run start:dev
-or
-$ yarn start:dev
-```
-
-## Test
-
-```bash
-$ npm run test
-or
-$ yarn test
-```
+1. **Instale as dependências:**
+   ```bash
+   npm install
+   npx prisma migrate dev
+   npm run seed 
+   npm run start:dev
