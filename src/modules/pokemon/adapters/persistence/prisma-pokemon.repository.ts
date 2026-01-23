@@ -14,7 +14,11 @@ export class PrismaPokemonRepository implements IPokemonRepository {
   async findAll(filter?: Partial<DomainPokemon>, offset?: number, limit?: number, sort?: { field: string; order: 'ASC' | 'DESC' },): Promise<DomainPokemon[]> {
     const rawPokemons = await this.prisma.pokemon.findMany({
       where: {
-        type: filter?.type,
+        types: filter?.type ? { //TODO: add filtering by multiple types
+          some: {
+            name: filter?.type
+          }
+        } : {},
         name: filter?.name ? {
           contains: filter.name,
         } : undefined,
@@ -25,6 +29,7 @@ export class PrismaPokemonRepository implements IPokemonRepository {
         } : { name: 'asc' },
       skip: offset || this.SKIP_DEFAULT,
       take: limit || this.TAKE_DEFAULT,
+      include: { types: true }
 
     });
     return rawPokemons.map(PokemonMapper.toDomain)
@@ -35,8 +40,14 @@ export class PrismaPokemonRepository implements IPokemonRepository {
     const created = await this.prisma.pokemon.create({
       data: {
         name: pokemon.name,
-        type: pokemon.type,
-      }
+        types: {
+          connectOrCreate: {
+            where: { name: pokemon.type },
+            create: { name: pokemon.type }, //TODO: add create with multiple types
+          },
+        } 
+      },
+      include: { types: true }
     });
 
     return PokemonMapper.toDomain(created);
@@ -44,10 +55,17 @@ export class PrismaPokemonRepository implements IPokemonRepository {
 
   async update(id: number, pokemon: Partial<Omit<DomainPokemon, "id">>): Promise<DomainPokemon> {     
     const updated = await this.prisma.pokemon.update({
-      where: { id }, data: {
+      where: { id }, 
+      data: {
         name: pokemon.name,
-        type: pokemon.type,
+        types: pokemon.type ? {
+          connectOrCreate: {
+            where: { name: pokemon.type },
+            create: { name: pokemon.type }, //TODO: add update with multiple types
+          },
+        } : {}  
       },
+      include: { types: true }
     });
     return PokemonMapper.toDomain(updated);
   }

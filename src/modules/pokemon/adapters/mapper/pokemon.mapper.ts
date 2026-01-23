@@ -1,14 +1,14 @@
-import { Pokemon as PrismaPokemon } from '@prisma/client';
+import { Pokemon as PrismaPokemon, Type as PrismaType } from '@prisma/client';
 import { Pokemon as DomainPokemon } from '@modules/pokemon/domain/pokemon.entity';
 import { Pokemon as GQLPokemon } from '@graphql.schema';
 
 export class PokemonMapper {
-  static toDomain({ id, name, type, createdAt }: PrismaPokemon): DomainPokemon {
+  static toDomain(raw: PrismaPokemon & { types: PrismaType[] }): DomainPokemon {
     return new DomainPokemon(
-      id,
-      name,
-      type,
-      createdAt
+      raw.id,
+      raw.name,
+      raw.types?.pop()?.name, 
+      raw.createdAt
     );
   }
 

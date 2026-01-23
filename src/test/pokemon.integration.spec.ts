@@ -28,8 +28,18 @@ describe('Pokemon GraphQL', () => {
     prisma = moduleFixture.get<PrismaService>(PrismaService);
 
     await prisma.pokemon.deleteMany();
-    await prisma.pokemon.createMany({
-      data: ascOrderedPokemonBag,
+    
+    for (const p of ascOrderedPokemonBag)
+    await prisma.pokemon.create({
+      data: {
+        name: p.name,
+        types: {
+          connectOrCreate: {
+            where: { name: p.type },
+            create: { name: p.type },
+          },
+        },
+      },
     });
   });
 
@@ -103,12 +113,12 @@ describe('Pokemon GraphQL', () => {
 
     it('should paginate results', async () => {
       const query = `
-    query GetPaginated($offset: Int, $limit: Int) {
-      getPokemons(offset: $offset, limit: $limit) {
-        name
-      }
-    }
-  `;
+        query GetPaginated($offset: Int, $limit: Int) {
+          getPokemons(offset: $offset, limit: $limit) {
+            name
+          }
+        }
+      `;
 
       const response = await request(app.getHttpServer())
         .post('/graphql')
@@ -130,12 +140,12 @@ describe('Pokemon GraphQL', () => {
 
     it('should sort pokemons by name DESC', async () => {
       const query = `
-    query GetSorted($sort: PokemonSort) {
-      getPokemons(sort: $sort) {
-        name
-      }
-    }
-  `;
+        query GetSorted($sort: PokemonSort) {
+          getPokemons(sort: $sort) {
+            name
+          }
+        }
+      `;
 
       const response = await request(app.getHttpServer())
         .post('/graphql')
@@ -154,12 +164,12 @@ describe('Pokemon GraphQL', () => {
 
     it('should sort pokemons by name ASC without passing order', async () => {
       const query = `
-    query GetSorted($sort: PokemonSort) {
-      getPokemons(sort: $sort) {
-        name
-      }
-    }
-  `;
+        query GetSorted($sort: PokemonSort) {
+          getPokemons(sort: $sort) {
+            name
+          }
+        }
+      `;
 
       const response = await request(app.getHttpServer())
         .post('/graphql')
@@ -233,14 +243,18 @@ describe('Pokemon GraphQL', () => {
   });
 
   describe("Mutation (Update and Delete)", () => {
-   it('should update and remove an existing pokemon', async () => {
-    // Let's pretend that Pikachu's trainer spelled its name incorrectly in registration
-    const existing = await prisma.pokemon.create({
-      data: { name: 'Pichu', type: 'Electric' }
-    });
+    it('should update and remove an existing pokemon', async () => {
+      // Let's pretend that Pikachu's trainer spelled its name incorrectly in registration
+      const existing = await prisma.pokemon.create({
+        data: {
+          name: 'Pichu', types: {
+            connect: { name: 'Electric' }
+          }
+        }
+      });
 
-    // Now he needs to make a request to change that!
-    const updateMutation = `
+      // Now he needs to make a request to change that!
+      const updateMutation = `
       mutation Update($input: UpdatePokemonInput!) {
         updatePokemon(input: $input) {
           id
@@ -249,43 +263,43 @@ describe('Pokemon GraphQL', () => {
       }
     `;
 
-    const updateInput = {
-      id: existing.id,
-      name: 'Pikachu'
-    };
+      const updateInput = {
+        id: existing.id,
+        name: 'Pikachu'
+      };
 
-    const updateResponse = await request(app.getHttpServer())
-      .post('/graphql')
-      .send({
-        query: updateMutation,
-        variables: { input: updateInput },
-      });
+      const updateResponse = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({
+          query: updateMutation,
+          variables: { input: updateInput },
+        });
 
-    // After he's done so, he verifies that now it's correct:
-    expect(updateResponse.body.data.updatePokemon.name).toBe('Pikachu');
-    const updatedDbCheck = await prisma.pokemon.findUnique({ where: { id: existing.id } });
-    expect(updatedDbCheck.name).toBe('Pikachu');
+      // After he's done so, he verifies that now it's correct:
+      expect(updateResponse.body.data.updatePokemon.name).toBe('Pikachu');
+      const updatedDbCheck = await prisma.pokemon.findUnique({ where: { id: existing.id } });
+      expect(updatedDbCheck.name).toBe('Pikachu');
 
-    // But he changes his mind and thinks this registration leaves too much hints for his enemies
-    // Then he deletes it
-    const deleteMutation = `
+      // But he changes his mind and thinks this registration leaves too much hints for his enemies
+      // Then he deletes it
+      const deleteMutation = `
       mutation Remove($id: Int!) {
         deletePokemon(id: $id)
       }
     `;
 
-    const deleteResponse = await request(app.getHttpServer())
-      .post('/graphql')
-      .send({
-        query: deleteMutation,
-        variables: { id: existing.id }, // Just passing the ID
-      });
+      const deleteResponse = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({
+          query: deleteMutation,
+          variables: { id: existing.id }, // Just passing the ID
+        });
 
-    // Finally, he checks the database and sees that his Pokemon is no longer there!
-    expect(deleteResponse.body.data.deletePokemon).toBe(true);
-    
-    const finalDbCheck = await prisma.pokemon.findUnique({ where: { id: existing.id } });
-    expect(finalDbCheck).toBeNull();
-  });
+      // Finally, he checks the database and sees that his Pokemon is no longer there!
+      expect(deleteResponse.body.data.deletePokemon).toBe(true);
+
+      const finalDbCheck = await prisma.pokemon.findUnique({ where: { id: existing.id } });
+      expect(finalDbCheck).toBeNull();
+    });
   })
 });
