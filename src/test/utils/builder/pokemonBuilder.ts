@@ -1,10 +1,11 @@
-import { Pokemon } from '@/modules/pokemon/domain/pokemon.entity';
+import { Pokemon } from '@/modules/pokemon/domain/entity/pokemon.entity';
 import { Builder } from './builder';
+import { TypeEntity } from '@/modules/pokemon/domain/entity/pokemon-type.entity';
 
 export class PokemonBuilder implements Builder<Pokemon> {
   private id?: number = undefined;
   private name = 'Pikachu';
-  private type = 'Electric';
+  private types = ['Electric'];
   private createdAt = new Date();
 
   static get(): PokemonBuilder {
@@ -13,36 +14,36 @@ export class PokemonBuilder implements Builder<Pokemon> {
 
   aCharizard(): this {
     this.name = 'charizard';
-    this.type = 'FIRE';
+    this.types = ['FIRE'];
     return this;
   }
 
   aPikachu(): this {
     this.name = 'pikachu';
-    this.type = 'Electric';
+    this.types = ['Electric'];
     return this;
   }
 
   aRaichu(): this {
     this.name = 'raichu';
-    this.type = 'Electric';
+    this.types = ['Electric'];
     return this;
   }
 
   aCharmeleon(): this {
     this.name = 'charmeleon';
-    this.type = 'FIRE';
+    this.types = ['FIRE'];
     return this;
   }
 
   aBlastoise(): this {
     this.name = 'blastoise';
-    this.type = 'WATER';
+    this.types = ['WATER'];
     return this;
   }
 
   withType(type: string): this {
-    this.type = type;
+    this.types = [type];
     return this;
   }
 
@@ -55,7 +56,7 @@ export class PokemonBuilder implements Builder<Pokemon> {
     return new Pokemon(
       this.id,
       this.name,
-      this.type,
+      this.types.map(name => new TypeEntity(name, 0)),
       this.createdAt,
     );
   }

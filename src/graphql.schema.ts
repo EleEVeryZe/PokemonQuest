@@ -8,28 +8,59 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export class CreatePokemonInput {
-    name: string;
-    type: string;
+export enum SortOrder {
+    ASC = "ASC",
+    DESC = "DESC"
 }
 
-export abstract class IQuery {
-    abstract hellow(): string | Promise<string>;
+export class TypesInput {
+    id?: Nullable<number>;
+    name: string;
+}
 
-    abstract hello(): number | Promise<number>;
+export class UpdatePokemonInput {
+    id: number;
+    name?: Nullable<string>;
+    types?: Nullable<Nullable<TypesInput>[]>;
+}
 
-    abstract getPokemon(id: number): Nullable<Pokemon> | Promise<Nullable<Pokemon>>;
+export class CreatePokemonInput {
+    name: string;
+    types: TypesInput[];
+}
+
+export class PokemonFilter {
+    name?: Nullable<string>;
+    types?: Nullable<Nullable<string>[]>;
+}
+
+export class PokemonSort {
+    field?: Nullable<string>;
+    order?: Nullable<SortOrder>;
+}
+
+export class PokemonType {
+    id?: Nullable<number>;
+    name: string;
 }
 
 export class Pokemon {
     id: number;
     name: string;
-    type: string;
+    types?: Nullable<Nullable<PokemonType>[]>;
     createdAt: string;
+}
+
+export abstract class IQuery {
+    abstract getPokemons(filter?: Nullable<PokemonFilter>, offset?: Nullable<number>, limit?: Nullable<number>, sort?: Nullable<PokemonSort>): Pokemon[] | Promise<Pokemon[]>;
 }
 
 export abstract class IMutation {
     abstract createPokemon(input: CreatePokemonInput): Pokemon | Promise<Pokemon>;
+
+    abstract updatePokemon(input: UpdatePokemonInput): Pokemon | Promise<Pokemon>;
+
+    abstract deletePokemon(id: number): boolean | Promise<boolean>;
 }
 
 type Nullable<T> = T | null;

@@ -1,4 +1,4 @@
-import { Pokemon } from './pokemon.entity';
+import { Pokemon } from './entity/pokemon.entity';
 
 export interface IPokemonRepository {
   findAll(filter?: Partial<Pokemon>, offset?: number, limit?: number, sort?: { field: string; order: 'ASC' | 'DESC' },): Promise<Pokemon[]>;

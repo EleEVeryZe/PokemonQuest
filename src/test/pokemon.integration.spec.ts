@@ -34,10 +34,10 @@ describe('Pokemon GraphQL', () => {
       data: {
         name: p.name,
         types: {
-          connectOrCreate: {
-            where: { name: p.type },
-            create: { name: p.type },
-          },
+          connectOrCreate: p.types.map(({name}) => ({
+            where: { name },
+            create: { name },
+          }))
         },
       },
     });
@@ -53,7 +53,9 @@ describe('Pokemon GraphQL', () => {
       query {
         getPokemons {
           name
-          type
+          types {
+            name
+          }
         }
       }
     `;
@@ -71,7 +73,9 @@ describe('Pokemon GraphQL', () => {
       query GetByType($filterInput: PokemonFilter) {
         getPokemons(filter: $filterInput) {
           name
-          type
+          types {
+            name
+          }
         }
       }
     `;
@@ -80,11 +84,11 @@ describe('Pokemon GraphQL', () => {
         .post('/graphql')
         .send({
           query,
-          variables: { filterInput: { type: 'WATER' } },
+          variables: { filterInput: { types: ['WATER'] } },
         });
 
       const results = response.body.data.getPokemons;
-      results.forEach(p => expect(p.type).toBe('WATER'));
+      results.forEach(p => expect(p.types.at(0).name).toBe('WATER'));
     });
 
     it('should filter pokemons by partil name', async () => {
@@ -92,7 +96,9 @@ describe('Pokemon GraphQL', () => {
       query GetByType($filterInput: PokemonFilter) {
         getPokemons(filter: $filterInput) {
           name
-          type
+          types {
+            name
+          }
         }
       }
     `;
@@ -106,7 +112,7 @@ describe('Pokemon GraphQL', () => {
 
       const results = response.body.data.getPokemons;
       results.forEach(p => {
-        expect(p.type).toBe('Electric');
+        expect(p.types.at(0).name).toBe('Electric');
         expect(p.name.indexOf("chu") !== -1).toBeTruthy();
       });
     });
@@ -208,7 +214,7 @@ describe('Pokemon GraphQL', () => {
       const messages = errors[0].extensions.originalError.message;
 
       expect(messages).toContain("Your Pokemon must have a name");
-      expect(messages).toContain("Your Pokemon must have a type");
+      expect(messages).toContain("Your Pokemon must have at least one type");
     });
 
     it('should create a new pokemon in the database', async () => {
@@ -217,12 +223,14 @@ describe('Pokemon GraphQL', () => {
           createPokemon(input: $input) {
             id
             name
-            type
+            types {
+              name
+            }
           }
         }
       `;
 
-      const blastoise = { name: 'blastoise', type: 'Electric' };
+      const blastoise = { name: 'blastoise', types: [{ name: 'Electric' }] };
 
       const response = await request(app.getHttpServer())
         .post('/graphql')

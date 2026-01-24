@@ -1,24 +1,34 @@
+type PokemonType {
+  id: Int
+  name: String!
+}
+
 type Pokemon {
   id: Int!
   name: String!
-  type: String!
+  types: [PokemonType]
   createdAt: String!
+}
+
+input TypesInput {
+  id: Int
+  name: String!
 }
 
 input UpdatePokemonInput {
   id: Int!
   name: String
-  type: String
+  types: [TypesInput]
 }
 
 input CreatePokemonInput {
   name: String
-  type: String
+  types: [TypesInput]
 }
 
 input PokemonFilter {
   name: String
-  type: String
+  types: [String]
 }
 
 type Query {

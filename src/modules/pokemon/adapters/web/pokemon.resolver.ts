@@ -1,8 +1,9 @@
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { PokemonService } from '../../application/pokemon.service';
-import { Pokemon } from '../../domain/pokemon.entity';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { FilterPokemonDto } from './dto/filter-pokemon.dto';
+import { PokemonMapper } from '../mapper/pokemon.mapper';
 
 @Resolver('Pokemon')
 export class PokemonResolver {
@@ -10,18 +11,18 @@ export class PokemonResolver {
 
   @Query('getPokemons')
   async getPokemons(
-    @Args("filter") filter?: Partial<Pokemon>,
+    @Args("filter") filter?: FilterPokemonDto,
     @Args('offset') offset?: number,
     @Args('limit') limit?: number,
     @Args('sort') sort?: { field: string; order: 'ASC' | 'DESC' },
 
   ) {
-    return this.pokemonService.getPokemons(filter, offset, limit, sort);
+    return this.pokemonService.getPokemons(PokemonMapper.fromDtoToDomain(filter), offset, limit, sort);
   }
 
   @Mutation('createPokemon')
   async createPokemon(@Args('input') pokemon: CreatePokemonDto) {
-    return this.pokemonService.createPokemon(pokemon.name, pokemon.type);
+    return this.pokemonService.createPokemon(pokemon.name, pokemon.types);
   }
 
   @Mutation('updatePokemon')

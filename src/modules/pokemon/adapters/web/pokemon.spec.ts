@@ -1,15 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PokemonResolver } from './pokemon.resolver';
 import { PokemonService } from '../../application/pokemon.service';
-import { Pokemon } from '../../domain/pokemon.entity';
+import { Pokemon } from '../../domain/entity/pokemon.entity';
+import { TypeEntity } from '../../domain/entity/pokemon-type.entity';
 
 describe('PokemonResolver', () => {
   let resolver: PokemonResolver;
   let service: PokemonService;
 
   const mockPokemons: Pokemon[] = [
-    new Pokemon(1, 'Pikachu', 'Electric', new Date()),
-    new Pokemon(2, 'Bulbasaur', 'Grass', new Date()),
+    new Pokemon(1, 'Pikachu', [new TypeEntity("Electric", undefined)], new Date()),
+    new Pokemon(2, 'Bulbasaur', [new TypeEntity('Grass', undefined)], new Date()),
   ];
 
   beforeEach(async () => {

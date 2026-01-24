@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { IPokemonRepository } from '@modules/pokemon/domain/IPokemonRepository';
 import { PokemonMapper } from '../mapper/pokemon.mapper';
-import { Pokemon as DomainPokemon } from '@modules/pokemon/domain/pokemon.entity';
+import { Pokemon as DomainPokemon } from '@/modules/pokemon/domain/entity/pokemon.entity';
+import { FilterPokemonDto } from '../web/dto/filter-pokemon.dto';
 
 @Injectable()
 export class PrismaPokemonRepository implements IPokemonRepository {
@@ -14,14 +15,16 @@ export class PrismaPokemonRepository implements IPokemonRepository {
   async findAll(filter?: Partial<DomainPokemon>, offset?: number, limit?: number, sort?: { field: string; order: 'ASC' | 'DESC' },): Promise<DomainPokemon[]> {
     const rawPokemons = await this.prisma.pokemon.findMany({
       where: {
-        types: filter?.type ? { //TODO: add filtering by multiple types
-          some: {
-            name: filter?.type
-          }
-        } : {},
         name: filter?.name ? {
           contains: filter.name,
         } : undefined,
+        ...(filter?.types?.length ? {
+          types: {
+            some: {
+              name: { in: filter.types.map(({name}) => name) }
+            }
+          }
+        } : {}),
       },
       orderBy: sort?.field ?
         {
@@ -33,19 +36,18 @@ export class PrismaPokemonRepository implements IPokemonRepository {
 
     });
     return rawPokemons.map(PokemonMapper.toDomain)
-
   }
 
   async save(pokemon: DomainPokemon): Promise<DomainPokemon> {
     const created = await this.prisma.pokemon.create({
       data: {
-        name: pokemon.name,
-        types: {
-          connectOrCreate: {
-            where: { name: pokemon.type },
-            create: { name: pokemon.type }, //TODO: add create with multiple types
-          },
-        } 
+        name: pokemon?.name,
+        types: pokemon?.types?.length ? {
+          connectOrCreate: pokemon.types.map(({ name }) => ({
+            where: { name },
+            create: { name },
+          })),
+        } : {}
       },
       include: { types: true }
     });
@@ -53,17 +55,17 @@ export class PrismaPokemonRepository implements IPokemonRepository {
     return PokemonMapper.toDomain(created);
   }
 
-  async update(id: number, pokemon: Partial<Omit<DomainPokemon, "id">>): Promise<DomainPokemon> {     
+  async update(id: number, pokemon: Partial<Omit<DomainPokemon, "id">>): Promise<DomainPokemon> {
     const updated = await this.prisma.pokemon.update({
-      where: { id }, 
+      where: { id },
       data: {
-        name: pokemon.name,
-        types: pokemon.type ? {
-          connectOrCreate: {
-            where: { name: pokemon.type },
-            create: { name: pokemon.type }, //TODO: add update with multiple types
-          },
-        } : {}  
+        name: pokemon?.name,
+        types: pokemon?.types?.length ? {
+          connectOrCreate: pokemon.types.map(({ name }) => ({
+            where: { name },
+            create: { name },
+          })),
+        } : {}
       },
       include: { types: true }
     });
