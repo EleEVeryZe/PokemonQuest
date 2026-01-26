@@ -4,11 +4,14 @@ import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { FilterPokemonDto } from './dto/filter-pokemon.dto';
 import { PokemonMapper } from '../mapper/pokemon.mapper';
+import { UseInterceptors } from '@nestjs/common';
+import { HttpCacheInterceptor } from '@/config/cache-interceptor';
 
 @Resolver('Pokemon')
 export class PokemonResolver {
   constructor(private readonly pokemonService: PokemonService) { }
 
+  @UseInterceptors(HttpCacheInterceptor)
   @Query('getPokemons')
   async getPokemons(
     @Args("filter") filter?: FilterPokemonDto,

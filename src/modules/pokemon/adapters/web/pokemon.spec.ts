@@ -3,6 +3,7 @@ import { PokemonResolver } from './pokemon.resolver';
 import { PokemonService } from '../../application/pokemon.service';
 import { Pokemon } from '../../domain/entity/pokemon.entity';
 import { TypeEntity } from '../../domain/entity/pokemon-type.entity';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 describe('PokemonResolver', () => {
   let resolver: PokemonResolver;
@@ -17,6 +18,7 @@ describe('PokemonResolver', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PokemonResolver,
+        { provide: CACHE_MANAGER, useValue: { get: jest.fn(), set: jest.fn() } },
         {
           provide: PokemonService,
           useValue: {

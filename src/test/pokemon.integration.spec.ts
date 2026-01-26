@@ -28,19 +28,19 @@ describe('Pokemon GraphQL', () => {
     prisma = moduleFixture.get<PrismaService>(PrismaService);
 
     await prisma.pokemon.deleteMany();
-    
+
     for (const p of ascOrderedPokemonBag)
-    await prisma.pokemon.create({
-      data: {
-        name: p.name,
-        types: {
-          connectOrCreate: p.types.map(({name}) => ({
-            where: { name },
-            create: { name },
-          }))
+      await prisma.pokemon.create({
+        data: {
+          name: p.name,
+          types: {
+            connectOrCreate: p.types.map(({ name }) => ({
+              where: { name },
+              create: { name },
+            }))
+          },
         },
-      },
-    });
+      });
   });
 
   afterAll(async () => {
@@ -310,4 +310,66 @@ describe('Pokemon GraphQL', () => {
       expect(finalDbCheck).toBeNull();
     });
   })
+
+  describe('Redis cache', () => {
+    it('should cache getPokemons query and invalidate after mutation', async () => {
+      const query = `
+          query {
+            getPokemons {
+              id
+              name
+            }
+          }
+        `;
+
+      const findManySpy = jest.spyOn(prisma.pokemon, 'findMany');
+
+      const firstResponse = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query });
+
+      expect(firstResponse.status).toBe(200);
+      expect(findManySpy).toHaveBeenCalledTimes(1);
+
+      const secondResponse = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query });
+
+      expect(secondResponse.status).toBe(200);
+
+      expect(findManySpy).toHaveBeenCalledTimes(1);
+
+      const mutation = `
+        mutation Create($input: CreatePokemonInput!) {
+          createPokemon(input: $input) {
+            id
+            name
+          }
+        }
+      `;
+
+      await request(app.getHttpServer())
+        .post('/graphql')
+        .send({
+          query: mutation,
+          variables: {
+            input: {
+              name: 'RedisTest',
+              types: [{ name: 'Electric' }],
+            },
+          },
+        });
+
+      const thirdResponse = await request(app.getHttpServer())
+        .post('/graphql')
+        .send({ query });
+
+      expect(thirdResponse.status).toBe(200);
+
+      expect(findManySpy).toHaveBeenCalledTimes(2);
+
+      findManySpy.mockRestore();
+    });
+  });
+
 });

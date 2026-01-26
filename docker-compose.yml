@@ -1,0 +1,11 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: pokemon-cache
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --loglevel warning
+
+volumes:
+  postgres_data:

@@ -1,5 +1,5 @@
 export const formatError = (error) => {
-    const isProduction = process.env.NODE_ENV !== 'production';
+    const isProduction = process.env.NODE_ENV === 'production';
 
     if (isProduction) {
         const message = error.extensions?.status === 500

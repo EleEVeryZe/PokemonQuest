@@ -8,9 +8,20 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { formatError } from "./config/format-error";
 import { PokemonModule } from "@modules/pokemon/pokemon.module";
 import { ConfigModule } from '@nestjs/config';
+import { CacheModule } from "@nestjs/cache-manager";
+import { redisStore } from "cache-manager-redis-yet";
 
 @Module({
   imports: [
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory: async () => ({
+        store: await redisStore({
+          url: 'redis://localhost:6379',
+          ttl: 60000,
+        }),
+      }),
+    }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       typePaths: ["./**/*.graphql"],
